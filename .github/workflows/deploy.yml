@@ -27,7 +27,8 @@ jobs:
       
       - name: Clone the project
         run: |
-            git clone https://github.com/theglad-x/fastapi-book-project.git
+            echo "$USER"
+            git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
             
             # if [! -d "/home/$USER/fastapi-book-project"]; then
             #   git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
