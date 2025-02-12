@@ -1,0 +1,59 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          HOSTNAME: ${{secrets.HOSTNAME}} #Public DNS
+          USER_NAME: ${{secrets.USER_NAME}}
+          SERVER_PUBLIC_IP: ${{secrets.SERVER_PUBLIC_IP}}
+  
+    steps:
+      - name: Checkout Respository 
+        uses: actions/checkout@v3
+       
+      - name: Set up SSH
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+      
+      - name: Clone the project
+        run: |
+            if [! -d "/home/$USER/fastapi-book-project"]; then
+              git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
+            fi
+
+            # cd to project directory
+              cd /home/$USER/fastapi-book-project
+
+            # Pull the code
+              git reset --hard origin/main &&
+              git pull origin main &&
+      
+      - name: Install Docker
+        run: |
+                ssh $USER@$HOSTNAME << 'EOF'
+                  sudo apt-get update
+                  sudo apt-get install -y docker.io 
+                  sudo usermod -aG docker $USER
+                EOF
+      
+                ssh $USER@$HOSTNAME "docker ps"
+      
+      - name: Deploy With Docker 
+        run: |
+                ssh $USER@$HOSTNAME << 'EOF'
+                  cd /home/$USER/fastapi-book-project
+                  docker stop fastapi-app || true
+                  docker rm fastapi-app || true
+                  docker build -t fastapi-app .
+                  docker run -d --name fastapi-app -p 8000:8000 fastapi-app
+                EOF
