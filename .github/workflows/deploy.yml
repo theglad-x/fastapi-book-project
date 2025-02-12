@@ -40,17 +40,17 @@ jobs:
       
       - name: Install Docker
         run: |
-                ssh $USER@$HOSTNAME << 'EOF'
+                ssh $USER_NAME@$HOSTNAME << 'EOF'
                   sudo apt-get update
                   sudo apt-get install -y docker.io 
                   sudo usermod -aG docker $USER
                 EOF
       
-                ssh $USER@$HOSTNAME "docker ps"
+                ssh $USER_NAME@$HOSTNAME "docker ps"
       
       - name: Deploy With Docker 
         run: |
-                ssh $USER@$HOSTNAME << 'EOF'
+                ssh $USER_NAME@$HOSTNAME << 'EOF'
                   cd /home/$USER/fastapi-book-project
                   docker stop fastapi-app || true
                   docker rm fastapi-app || true
