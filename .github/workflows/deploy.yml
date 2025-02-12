@@ -33,8 +33,6 @@ jobs:
                 ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
                   echo "$USER"
                   
-                  # mkdir fastapi-book-project
-                  
                   if [ ! -d "/home/$USER/fastapi-book-project" ]; then
                     git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
                   fi
