@@ -22,8 +22,11 @@ jobs:
        
       - name: Set up SSH
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME}
+            mkdir -p ~/.ssh
+            echo "$PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H $SERVER_PUBLIC_IP >> ~/.ssh/known_hosts
+
       
       - name: Clone the project
         run: |
