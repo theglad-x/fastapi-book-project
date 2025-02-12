@@ -28,18 +28,15 @@ jobs:
       - name: Clone the project
         run: |
             echo "$USER"
-            git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
             
-            # if [! -d "/home/$USER/fastapi-book-project"]; then
-            #   git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
-            # fi
+            mkdir fastapi-book-project.git
+            git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
 
             # cd to project directory
               cd /home/$USER/fastapi-book-project
 
             # Pull the code
-              git reset --hard origin/main &&
-              git pull origin main &&
+              git reset --hard origin/main && git pull origin main
       
       - name: Install Docker
         run: |
