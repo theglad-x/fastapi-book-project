@@ -29,18 +29,23 @@ jobs:
 
       
       - name: Clone the project
-        run: |
-            echo "$USER"
-            
-            mkdir fastapi-book-project.git
-            git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
-
-            # cd to project directory
-              cd /home/$USER/fastapi-book-project
-
-            # Pull the code
-              git reset --hard origin/main && git pull origin main
-      
+        run: | 
+            ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
+              echo "$USER"
+              
+              # mkdir fastapi-book-project
+              
+              if [ ! -d "/home/$USER/fastapi-book-project" ]; then
+                git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
+              fi
+              
+              # cd to project directory
+                cd /home/$USER/fastapi-book-project
+  
+              # Pull the code
+                git reset --hard origin/main && git pull origin main
+              EOF
+              
       - name: Install Docker
         run: |
                 ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
