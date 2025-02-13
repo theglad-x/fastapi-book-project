@@ -22,44 +22,32 @@ jobs:
        
       - name: Set up SSH
         run: |
-            mkdir -p ~/.ssh
-            echo "$PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-            ssh-keyscan -H $SERVER_PUBLIC_IP >> ~/.ssh/known_hosts
+          mkdir -p ~/.ssh
+          echo "$PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SERVER_PUBLIC_IP >> ~/.ssh/known_hosts
 
       
-      - name: Clone the project
+      - name: Deploy to EC2
         run: | 
-                ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
-                  echo "$USER"
-                  
-                  if [ ! -d "/home/$USER/fastapi-book-project" ]; then
-                    git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
-                  fi
-                  
-                  # cd to project directory
-                  cd /home/$USER/fastapi-book-project
-      
-                  # Pull the code
-                  git reset --hard origin/main && git pull origin main
-                EOF
-              
-      - name: Install Docker
-        run: |
-                ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
-                  sudo apt-get update
-                  sudo apt-get install -y docker.io 
-                  sudo usermod -aG docker $USER
-                EOF
-      
-                ssh $USER_NAME@$SERVER_PUBLIC_IP "docker ps"
-      
-      - name: Deploy With Docker 
-        run: |
-                ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
-                  cd /home/$USER/fastapi-book-project
-                  docker stop fastapi-app || true
-                  docker rm fastapi-app || true
-                  docker build -t fastapi-app .
-                  docker run -d --name fastapi-app -p 8000:8000 fastapi-app
-                EOF
+          ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
+            echo "$USER"
+
+            set -e
+            
+            if [ ! -d "/home/$USER/fastapi-book-project" ]; then
+              git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
+            fi
+            
+            # cd to project directory
+            cd /home/$USER/fastapi-book-project
+
+            # Pull the code
+            git reset --hard origin/main
+            git pull origin main
+
+            docker stop fastapi-app || true
+            docker rm fastapi-app || true
+            docker build -t fastapi-app .
+            docker run -d --name fastapi-app -p 8000:8000 fastapi-app
+          EOF
