@@ -7,8 +7,8 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to EC2
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
@@ -42,10 +42,10 @@ jobs:
             # cd to project directory
             cd /home/$USER/fastapi-book-project
 
-            # Pull the code
+  
+            git fetch origin main
             git reset --hard origin/main
-            git pull origin main
-
+            
             docker stop fastapi-app || true
             docker rm fastapi-app || true
             docker build -t fastapi-app .
