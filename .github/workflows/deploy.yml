@@ -38,6 +38,10 @@ jobs:
             if [ ! -d "/home/$USER/fastapi-book-project" ]; then
               git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
             fi
+
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+            sudo usermod -aG docker $USER
             
             # cd to project directory
             cd /home/$USER/fastapi-book-project
