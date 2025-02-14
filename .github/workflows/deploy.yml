@@ -3,7 +3,7 @@ name: CD Pipeline
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   deploy:
@@ -11,15 +11,15 @@ jobs:
     timeout-minutes: 5
 
     env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          HOSTNAME: ${{secrets.HOSTNAME}} #Public DNS
-          USER_NAME: ${{secrets.USER_NAME}}
-          SERVER_PUBLIC_IP: ${{secrets.SERVER_PUBLIC_IP}}
-  
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      HOSTNAME: ${{ secrets.HOSTNAME }} # Public DNS
+      USER_NAME: ${{ secrets.USER_NAME }}
+      SERVER_PUBLIC_IP: ${{ secrets.SERVER_PUBLIC_IP }}
+
     steps:
-      - name: Checkout Respository 
+      - name: Checkout Repository
         uses: actions/checkout@v3
-       
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -27,37 +27,35 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $SERVER_PUBLIC_IP >> ~/.ssh/known_hosts
 
-      
       - name: Deploy to EC2
-        run: | 
-          ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
-            echo "$USER"
-
-            set -e
-            
-            if [ ! -d "/home/$USER/fastapi-book-project" ]; then
-              git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
-            fi
-  
-            git fetch origin main
-            git reset --hard origin/main
-          EOF
-
-          ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
-            sudo apt-get update
-            sudo apt-get install -y docker.io 
-            sudo usermod -aG docker $USER
-          EOF
-
-          ssh $USER_NAME@$SERVER_PUBLIC_IP "docker ps"
-
-      - name: Deploy With Docker 	
         run: |
           ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
-            cd /home/$USER/fastapi-book-project
+            set -e
+            echo "Running as: $(whoami)"
 
+            # Clone or update repository
+            if [ ! -d "/home/$USER_NAME/fastapi-book-project" ]; then
+              git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER_NAME/fastapi-book-project
+            fi
+            cd /home/$USER_NAME/fastapi-book-project
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Install Docker if not installed
+            if ! command -v docker &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+              sudo usermod -aG docker $USER_NAME
+            fi
+
+            # Stop and remove existing container
             docker stop fastapi-app || true
             docker rm fastapi-app || true
-            docker build -t fastapi-app 
+
+            # Build and run the container
+            docker build -t fastapi-app .
             docker run -d --name fastapi-app -p 8000:8000 fastapi-app
           EOF
+
+      - name: Verify Deployment
+        run: ssh $USER_NAME@$SERVER_PUBLIC_IP "docker ps"
