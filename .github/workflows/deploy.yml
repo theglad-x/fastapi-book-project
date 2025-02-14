@@ -38,20 +38,26 @@ jobs:
             if [ ! -d "/home/$USER/fastapi-book-project" ]; then
               git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
             fi
-
-            sudo apt-get update
-            sudo apt-get install -y docker.io
-            sudo usermod -aG docker $USER
-            
-            # cd to project directory
-            cd /home/$USER/fastapi-book-project
-
   
             git fetch origin main
             git reset --hard origin/main
-            
+          EOF
+
+          ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
+            sudo apt-get update
+            sudo apt-get install -y docker.io 
+            sudo usermod -aG docker $USER
+          EOF
+
+          ssh $USER_NAME@$SERVER_PUBLIC_IP "docker ps"
+
+      - name: Deploy With Docker 	
+        run: |
+          ssh $USER_NAME@$SERVER_PUBLIC_IP << 'EOF'
+            cd /home/$USER/fastapi-book-project
+
             docker stop fastapi-app || true
             docker rm fastapi-app || true
-            docker build -t fastapi-app .
+            docker build -t fastapi-app 
             docker run -d --name fastapi-app -p 8000:8000 fastapi-app
           EOF
