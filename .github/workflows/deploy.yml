@@ -37,15 +37,15 @@ jobs:
             if [ ! -d "/home/$USER/fastapi-book-project" ]; then
               git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
             fi
+            
             cd /home/$USER/fastapi-book-project
             git fetch origin main
             git reset --hard origin/main
 
             # Install Docker if not installed
-              sudo apt-get update
-              sudo apt-get install -y docker.io
-              sudo usermod -aG docker $USER
-            fi
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+            sudo usermod -aG docker $USER
 
             # Stop and remove existing container
             docker stop fastapi-app || true
