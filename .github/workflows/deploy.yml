@@ -34,17 +34,17 @@ jobs:
             echo "Running as: $(whoami)"
 
             # Clone or update repository
-            if [ ! -d "/home/$USER_NAME/fastapi-book-project" ]; then
-              git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER_NAME/fastapi-book-project
+            if [ ! -d "/home/$USER/fastapi-book-project" ]; then
+              git clone https://github.com/theglad-x/fastapi-book-project.git /home/$USER/fastapi-book-project
             fi
-            cd /home/$USER_NAME/fastapi-book-project
+            cd /home/$USER/fastapi-book-project
             git fetch origin main
             git reset --hard origin/main
 
             # Install Docker if not installed
               sudo apt-get update
               sudo apt-get install -y docker.io
-              sudo usermod -aG docker $USER_NAME
+              sudo usermod -aG docker $USER
             fi
 
             # Stop and remove existing container
@@ -55,6 +55,4 @@ jobs:
             docker build -t fastapi-app .
             docker run -d --name fastapi-app -p 8000:8000 fastapi-app
           EOF
-
-      - name: Verify Deployment
-        run: ssh $USER_NAME@$SERVER_PUBLIC_IP "docker ps"
+          
